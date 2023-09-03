@@ -108,4 +108,4 @@ API endpoint list are also available as published postman documentation
 
 :rocket: [`Demo Hiring App`](https://rekrut-client.vercel.app/)
 
-Project link : [https://github.com/izaazwaskito/HireJob-BE](https://github.com/izaazwaskito/HireJob-BE))
+Project link : [Rekrut Server](https://github.com/YuSetiawan/Rekrut_client))
