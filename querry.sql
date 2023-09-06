@@ -42,6 +42,7 @@ create table users_verification (
 primary key (id)
 );
 
+-- Table Experience
 create table skills(
     id varchar primary key,
     skill_name varchar(20),
@@ -55,6 +56,7 @@ create table skills(
 --     id_users varchar
 -- );
 
+-- Table Portfolio
 CREATE TABLE portofolio(
     id VARCHAR NOT NULL PRIMARY KEY,
     name VARCHAR,
@@ -63,6 +65,8 @@ CREATE TABLE portofolio(
     id_users VARCHAR
 );
 
+
+-- Table Experience
 CREATE TABLE experience(
     id VARCHAR NOT NULL PRIMARY KEY,
     job_position VARCHAR,
