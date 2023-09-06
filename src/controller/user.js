@@ -5,7 +5,25 @@ const Joi = require('joi');
 const authHelper = require('../helper/auth');
 const commonHelper = require('../helper/common');
 const cloudinary = require('../middlewares/cloudinary');
-let {selectAllUsers, selectUsers, deleteUsers, createUsers, createRecruiter, updateUsers, updateImgUsers, findID, findEmail, countData} = require('../model/user');
+const crypto = require('crypto');
+let {
+  selectAllUsers,
+  selectUsers,
+  deleteUsers,
+  createUsers,
+  createRecruiter,
+  updateUsers,
+  updateImgUsers,
+  findID,
+  findEmail,
+  countData,
+  createUserVerification,
+  checkUserVerification,
+  cekUser,
+  deleteUserVerification,
+  updateAccountVerification,
+} = require('../model/user');
+const sendEmailUser = require('../middlewares/sendEmailUser');
 
 let userController = {
   getAllUser: async (req, res) => {
@@ -50,14 +68,6 @@ let userController = {
     }
     const passwordHash = bcrypt.hashSync(password);
     const id = uuidv4();
-    const data = {
-      id,
-      name,
-      email,
-      phone,
-      passwordHash,
-      role,
-    };
 
     const schema = Joi.object().keys({
       name: Joi.required(),
@@ -74,7 +84,27 @@ let userController = {
       return res.send(error.details);
     }
 
-    createUsers(data)
+    const verify = 'false';
+    const users_verification_id = uuidv4().toLocaleLowerCase();
+    const users_id = id;
+    const token = crypto.randomBytes(64).toString('hex');
+    const url = `${process.env.BASE_URL}user/verify?id=${users_id}&token=${token}`;
+
+    await sendEmailUser(name, email, 'Email Verification for Peworld Account', url);
+
+    const data = {
+      id,
+      name,
+      email,
+      phone,
+      passwordHash,
+      role,
+      verify,
+    };
+
+    createUsers(data);
+
+    await createUserVerification(users_verification_id, users_id, token)
       .then((result) => commonHelper.response(res, result.rows, 201, 'Register Success'))
       .catch((err) => res.send(err));
   },
@@ -118,6 +148,39 @@ let userController = {
     createRecruiter(data)
       .then((result) => commonHelper.response(res, result.rows, 201, 'Register Success'))
       .catch((err) => res.send(err));
+  },
+
+  VerifyAccount: async (req, res) => {
+    try {
+      const queryUsersId = req.query.id;
+      const queryToken = req.query.token;
+
+      if (typeof queryUsersId === 'string' && typeof queryToken === 'string') {
+        const checkUsersVerify = await findID(queryUsersId);
+
+        if (checkUsersVerify.rowCount == 0) {
+          return commonHelper.response(res, null, 403, 'Error users has not found');
+        }
+
+        if (checkUsersVerify.rows[0].verify != 'false') {
+          return commonHelper.response(res, null, 403, 'Users has been verified');
+        }
+
+        const result = await checkUserVerification(queryUsersId, queryToken);
+
+        if (result.rowCount == 0) {
+          return commonHelper.response(res, null, 403, 'Error invalid credential verification');
+        } else {
+          await updateAccountVerification(queryUsersId);
+          await deleteUserVerification(queryUsersId, queryToken);
+          commonHelper.response(res, null, 200, 'Users verified succesful');
+        }
+      } else {
+        return commonHelper.response(res, null, 403, 'Invalid url verification');
+      }
+    } catch (error) {
+      console.log(error);
+    }
   },
 
   updateUsers: async (req, res) => {
@@ -193,6 +256,14 @@ let userController = {
     const isValidPassword = bcrypt.compareSync(password, user.password);
     if (!isValidPassword) {
       return res.json({message: 'Password is incorrect!'});
+    }
+    const {
+      rows: [verify],
+    } = await cekUser(email);
+    if (verify.verify === 'false') {
+      return res.json({
+        message: 'Account is unverify, please check your email for verification.',
+      });
     }
     const payload = {
       email: user.email,

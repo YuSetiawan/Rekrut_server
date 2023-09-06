@@ -16,15 +16,35 @@ const deleteUsers = (id) => {
 };
 
 const createUsers = (data) => {
-  const {id, name, email, phone, passwordHash, role} = data;
-  return Pool.query(`INSERT INTO users(id,name,email,phone,password, role) 
-    VALUES ('${id}','${name}','${email}','${phone}','${passwordHash}', '${role}')`);
+  const {id, name, email, phone, passwordHash, role, verify} = data;
+  return Pool.query(`INSERT INTO users(id,name,email,phone,password, role, verify) 
+    VALUES ('${id}','${name}','${email}','${phone}','${passwordHash}', '${role}', '${verify}')`);
 };
 
 const createRecruiter = (data) => {
   const {id, name, email, job_position, company_name, phone, passwordHash, role} = data;
   return Pool.query(`INSERT INTO users(id,name,email,job_position,company_name,phone,password, role) 
     VALUES ('${id}','${name}','${email}','${job_position}','${company_name}','${phone}','${passwordHash}', '${role}')`);
+};
+
+const createUserVerification = (users_verification_id, users_id, token) => {
+  return Pool.query(`insert into users_verification ( id , users_id , token ) values ( '${users_verification_id}' , '${users_id}' , '${token}' )`);
+};
+
+const checkUserVerification = (queryUsersId, queryToken) => {
+  return Pool.query(`select * from users_verification where users_id='${queryUsersId}' and token='${queryToken}' `);
+};
+
+const cekUser = (email) => {
+  return Pool.query(`select verify from users where email = '${email}' `);
+};
+
+const deleteUserVerification = (queryUsersId, queryToken) => {
+  return Pool.query(`delete from users_verification where users_id='${queryUsersId}' and token='${queryToken}' `);
+};
+
+const updateAccountVerification = (queryUsersId) => {
+  return Pool.query(`update users set verify='true' where id='${queryUsersId}' `);
 };
 
 const updateUsers = (data) => {
@@ -71,6 +91,11 @@ module.exports = {
   deleteUsers,
   createUsers,
   createRecruiter,
+  createUserVerification,
+  checkUserVerification,
+  cekUser,
+  deleteUserVerification,
+  updateAccountVerification,
   updateUsers,
   updateImgUsers,
   findID,
