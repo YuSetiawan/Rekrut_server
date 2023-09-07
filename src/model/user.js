@@ -22,9 +22,9 @@ const createUsers = (data) => {
 };
 
 const createRecruiter = (data) => {
-  const {id, name, email, job_position, company_name, phone, passwordHash, role} = data;
-  return Pool.query(`INSERT INTO users(id,name,email,job_position,company_name,phone,password, role) 
-    VALUES ('${id}','${name}','${email}','${job_position}','${company_name}','${phone}','${passwordHash}', '${role}')`);
+  const {id, name, email, job_position, company_name, phone, passwordHash, role, verify} = data;
+  return Pool.query(`INSERT INTO users(id,name,email,job_position,company_name,phone,password, role, verify) 
+    VALUES ('${id}','${name}','${email}','${job_position}','${company_name}','${phone}','${passwordHash}', '${role}', '${verify}')`);
 };
 
 const createUserVerification = (users_verification_id, users_id, token) => {
