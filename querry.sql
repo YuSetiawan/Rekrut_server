@@ -42,13 +42,25 @@ create table users_verification (
 primary key (id)
 );
 
--- Table Experience
+-- Table Skills
 create table skills(
-    id varchar primary key,
-    skill_name varchar(20),
-    id_users varchar
+    id VARCHAR primary key,
+    skill_name VARCHAR(20),
+    id_users VARCHAR
 );
 
+-- Table hire
+create table hire(
+    id VARCHAR not null,
+    offering VARCHAR,
+    description TEXT,
+    worker_id VARCHAR,
+    worker_name VARCHAR,
+    worker_email VARCHAR,
+    rec_id VARCHAR,
+    rec_email VARCHAR,
+    rec_company VARCHAR
+);
 -- create table socials(
 --     id varchar primary key,
 --     social_name varchar(25),

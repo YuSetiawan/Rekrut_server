@@ -117,16 +117,6 @@ let userController = {
     }
     const passwordHash = bcrypt.hashSync(password);
     const id = uuidv4();
-    const data = {
-      id,
-      name,
-      email,
-      job_position,
-      company_name,
-      phone,
-      passwordHash,
-      role,
-    };
 
     const schema = Joi.object().keys({
       name: Joi.required(),
@@ -145,7 +135,29 @@ let userController = {
       return res.send(error.details);
     }
 
-    createRecruiter(data)
+    const verify = 'false';
+    const users_verification_id = uuidv4().toLocaleLowerCase();
+    const users_id = id;
+    const token = crypto.randomBytes(64).toString('hex');
+    const url = `${process.env.BASE_URL}user/verify?id=${users_id}&token=${token}`;
+
+    await sendEmailUser(name, email, 'Email Verification for Peworld Account', url);
+
+    const data = {
+      id,
+      name,
+      email,
+      job_position,
+      company_name,
+      phone,
+      passwordHash,
+      role,
+      verify,
+    };
+
+    createRecruiter(data);
+
+    await createUserVerification(users_verification_id, users_id, token)
       .then((result) => commonHelper.response(res, result.rows, 201, 'Register Success'))
       .catch((err) => res.send(err));
   },
@@ -272,7 +284,7 @@ let userController = {
     user.token = authHelper.generateToken(payload);
     user.refreshToken = authHelper.generateRefreshToken(payload);
 
-    commonHelper.response(res, user, 201, 'login is successful');
+    commonHelper.response(res, user, 201, 'Login successful');
   },
 
   refreshToken: (req, res) => {
